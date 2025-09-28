@@ -1,86 +1,58 @@
-
-import React from 'react';
-import type { Workflow } from 'types';
-import { FracturedLoopLogo, ChatBubbleLeftRightIcon, ArrowRightOnRectangleIcon, CubeTransparentIcon } from './IconComponents';
-
-interface LandingPageProps {
-  workflows: Workflow[];
-  onStartSandbox: () => void;
-  onStartWorkflow: (workflow: Workflow) => void;
-  onStartQuantumBox: () => void;
-}
-
-const LandingPage: React.FC<LandingPageProps> = ({ workflows, onStartSandbox, onStartWorkflow, onStartQuantumBox }) => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-white p-4 md:p-8 overflow-y-auto gradient-bg gradient-overlay">
-      <header className="text-center mb-12 md:mb-16 fade-in">
-        <FracturedLoopLogo className="w-20 h-20 md:w-28 md:h-28 text-indigo-400 mx-auto mb-4 md:mb-6 float pulse-glow" />
-        <h1 className="text-4xl md:text-6xl font-bold text-gradient mb-4">AI Assistant Director</h1>
-        <p className="text-lg md:text-2xl text-gradient-accent">Fractured Loop</p>
-      </header>
-
-      <main className="w-full max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
-
-          {/* Card 1: Sandbox Mode */}
-          <div className="glass-card hover-lift rounded-2xl p-6 md:p-8 flex flex-col items-start transition-all duration-500 slide-up">
-            <div className="icon-container p-3 md:p-4 rounded-2xl mb-4 md:mb-6">
-              <ChatBubbleLeftRightIcon className="w-8 h-8 md:w-10 md:h-10 text-indigo-400 glow-indigo" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gradient mb-3 md:mb-4">Sandbox Mode</h2>
-            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 flex-grow">
-              Free-form brainstorming with AI assistance.
-            </p>
-            <button
-              onClick={onStartSandbox}
-              className="btn-primary w-full text-center font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl text-base md:text-lg"
-            >
-              Start Sandbox
-            </button>
-          </div>
-
-          {/* Card 2: Workflows */}
-          <div className="glass-card hover-lift rounded-2xl p-6 md:p-8 flex flex-col items-start transition-all duration-500 slide-up">
-            <div className="icon-container p-3 md:p-4 rounded-2xl mb-4 md:mb-6">
-                <ArrowRightOnRectangleIcon className="w-8 h-8 md:w-10 md:h-10 text-fuchsia-400 glow-fuchsia" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gradient mb-3 md:mb-4">Guided Workflows</h2>
-            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-4 md:mb-6 flex-grow">
-              Follow a step-by-step process for specific outcomes like character design or shot creation.
-            </p>
-            <div className="space-y-3 md:space-y-4 w-full">
-              {workflows.map((workflow) => (
-                <button
-                  key={workflow.id}
-                  onClick={() => onStartWorkflow(workflow)}
-                  className="btn-secondary w-full text-left p-3 md:p-4 rounded-xl group hover-lift"
-                >
-                  <p className="font-bold text-white mb-1 group-hover:text-fuchsia-300 transition-colors text-sm md:text-base">{workflow.name}</p>
-                  <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors text-xs md:text-sm">{workflow.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 3: Quantum Box */}
-          <div className="glass-card hover-lift rounded-2xl p-6 md:p-8 flex flex-col items-start transition-all duration-500 slide-up">
-            <div className="icon-container p-3 md:p-4 rounded-2xl mb-4 md:mb-6">
-                <CubeTransparentIcon className="w-8 h-8 md:w-10 md:h-10 text-amber-400 glow-amber" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gradient mb-3 md:mb-4">Quantum Box</h2>
-            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 flex-grow">
-              Visual concept mapping with weighted relationships.
-            </p>
-             <button
-              onClick={onStartQuantumBox}
-              className="btn-primary w-full text-center font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl text-base md:text-lg"
-            >
-              Start Quantum Box
-            </button>
-          </div>
+n          </div>
 
         </div>
       </main>
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="glass-card rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gradient">How the Node System Works</h2>
+              <button
+                onClick={() => setShowHelp(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="text-gray-300 space-y-4 leading-relaxed">
+              <p>
+                The Quantum Box uses a powerful node-based system for visual concept mapping and AI prompt generation. Here's how it works:
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">1. Creating Nodes</h3>
+                  <p>Nodes represent different concepts, parameters, or ideas. You can create input nodes (like character traits, settings, or styles) and connect them to build complex relationships.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">2. Node Types</h3>
+                  <ul className="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Text Nodes:</strong> Free-form input for concepts, descriptions, or ideas</li>
+                    <li><strong>Option Nodes:</strong> Predefined choices for specific parameters like shot types or lighting styles</li>
+                    <li><strong>Output Nodes:</strong> The final destination where you generate AI prompts</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">3. Weighting System</h3>
+                  <p>Each node can be weighted to influence how strongly it affects the final output. Higher weights make concepts more prominent in generated prompts.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">4. Connections</h3>
+                  <p>Connect nodes by dragging from one to another. The connections determine how concepts flow and combine in your creative process.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">5. Generating Output</h3>
+                  <p>Connect your nodes to an AI Prompt Output node and select the type of content you want to generate: images, videos, stories, or batch prompts.</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-400 mt-6">
+                Experiment with different connections and weights to discover unique creative combinations!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
