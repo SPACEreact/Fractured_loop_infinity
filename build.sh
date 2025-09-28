@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure the script is executable
+chmod +x build.sh
+
 # Set up error catching and logging
 echo "Starting build process..."
 
