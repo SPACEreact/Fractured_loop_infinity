@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { Message, BuildType } from '../types';
+import type { Message } from '../types';
 import { ChatRole } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import { SendIcon, SparklesIcon, UserIcon } from './IconComponents';
@@ -11,7 +11,7 @@ interface ChatWindowProps {
   placeholder: string;
   error: string | null;
   onSendMessage: (message: string) => void;
-  activeBuildType: BuildType;
+  activeBuildType: string;
 }
 
 // Helper to escape HTML to prevent XSS from user input being reflected in prompt
@@ -40,7 +40,7 @@ const formatSingleImageOutput = (data: any, index: number, total: number) => {
 
 
 // Helper to format the final build outputs for display
-const formatBuildOutput = (content: string, buildType: BuildType): string => {
+const formatBuildOutput = (content: string, buildType: string): string => {
     try {
         // Handle batch image output first
         if (buildType === 'image' && content.trim().startsWith('[')) {
@@ -133,11 +133,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isInputDis
   };
 
   const renderMessageContent = (message: Message) => {
-    if (message.role === ChatRole.MODEL_OUTPUT) {
+    if (message.role === ChatRole.MODEL) {
       const formattedContent = formatBuildOutput(message.content, activeBuildType);
       return <div dangerouslySetInnerHTML={{ __html: formattedContent }} />;
     }
-    
+
     const contentWithBreaks = message.content.replace(/\n/g, '<br />');
     return <div dangerouslySetInnerHTML={{ __html: contentWithBreaks }} />;
   };
@@ -157,7 +157,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isInputDis
               <div className={`max-w-xl p-4 rounded-xl ${
                 msg.role === ChatRole.USER
                   ? 'bg-gray-700 text-gray-100'
-                  : msg.role === ChatRole.MODEL_OUTPUT
+                  : msg.role === ChatRole.MODEL
                   ? 'bg-transparent border border-indigo-500/50 w-full max-w-none'
                   : 'bg-gray-800 text-gray-200'
               }`}>

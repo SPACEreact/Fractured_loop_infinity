@@ -1,10 +1,8 @@
-
-
 import React, { useState, useRef, useCallback, MouseEvent as ReactMouseEvent, useEffect } from 'react';
 import type { Node, Connection, NodeGraph } from '../types';
 import { NODE_TEMPLATES, NodeTemplate, TAG_GROUPS } from '../constants';
 import { generateFromQuantumBox } from '../services/geminiService';
-import { ArrowUturnLeftIcon, SparklesIcon, CubeTransparentIcon } from './IconComponents';
+import { ArrowUturnLeftIcon, SparklesIcon, CubeTransparentIcon, QuestionMarkCircleIcon } from './IconComponents';
 
 
 // --- Sub-components ---
@@ -114,7 +112,7 @@ const NodeLibraryPanel = ({ onDragStart, onPreview }: {
     }, {} as Record<string, NodeTemplate[]>);
 
     return (
-        <aside className="glass-card w-64 p-4 flex flex-col fixed inset-y-0 left-0 overflow-y-auto custom-scrollbar z-30">
+        <aside className="glass-card w-64 p-4 flex flex-col fixed top-14 bottom-0 left-0 overflow-y-auto custom-scrollbar z-30">
             <div className="flex items-center gap-2 px-2 mb-4">
                 <CubeTransparentIcon className="w-8 h-8 text-indigo-400" />
                 <h1 className="text-xl font-bold text-gray-100">Tag Library</h1>
@@ -308,6 +306,7 @@ const QuantumBox = (props: QuantumBoxProps) => {
     const [activeTab, setActiveTab] = useState('inspector');
     const [isPromptVisible, setIsPromptVisible] = useState(false);
     const [isSunOptionsVisible, setIsSunOptionsVisible] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
 
     const interaction = useRef<{ type: 'move' | 'resize' | 'connect', nodeId: string; offsetX: number; offsetY: number, startX: number, startY: number, originalSize?: number } | null>(null);
     const [drawingConnection, setDrawingConnection] = useState<{ from: { x: number; y: number }; to: { x: number; y: number } } | null>(null);
@@ -558,7 +557,7 @@ const deleteNode = useCallback((nodeId: string) => {
     return (
         <div className="h-screen flex flex-col">
             <header className="p-2 border-b border-gray-700 flex justify-between items-center flex-shrink-0 z-10 bg-gray-900">
-                 <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                     <button onClick={onGoHome} className="flex items-center gap-2 text-gray-300 font-medium py-2 px-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200" title="Go back to home">
                         <ArrowUturnLeftIcon className="w-5 h-5" />
                         <span>Home</span>
@@ -566,10 +565,16 @@ const deleteNode = useCallback((nodeId: string) => {
                     <div className="w-px h-6 bg-gray-700"></div>
                      <h1 className="text-xl font-bold text-gray-100">Quantum Box</h1>
                 </div>
-                <button onClick={handleGenerate} disabled={isGenerating || graph.nodes.length === 0} className="flex items-center gap-2 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-500 transition-colors duration-200 disabled:bg-gray-600 disabled:cursor-not-allowed" title="Generate output from nodes">
-                    <SparklesIcon className="w-5 h-5" />
-                    <span>Generate</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => setShowHelp(true)} className="flex items-center gap-2 text-gray-300 font-medium py-2 px-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200" title="Help">
+                        <QuestionMarkCircleIcon className="w-5 h-5" />
+                        <span>Help</span>
+                    </button>
+                    <button onClick={handleGenerate} disabled={isGenerating || graph.nodes.length === 0} className="flex items-center gap-2 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-500 transition-colors duration-200 disabled:bg-gray-600 disabled:cursor-not-allowed" title="Generate output from nodes">
+                        <SparklesIcon className="w-5 h-5" />
+                        <span>Generate</span>
+                    </button>
+                </div>
             </header>
 
             <main className="flex-1 relative">
@@ -626,7 +631,7 @@ const deleteNode = useCallback((nodeId: string) => {
                 </div>
 
                 {/* Inspector Panel - Hidden on mobile */}
-                <aside className="hidden md:flex bg-gray-800/50 w-80 flex-col fixed inset-y-0 right-0 z-30">
+                <aside className="hidden md:flex bg-gray-800/50 w-80 flex-col fixed top-14 bottom-0 right-0 z-30">
                     <div className="flex-shrink-0 border-b border-gray-700">
                         <nav className="flex -mb-px">
                             <button onClick={() => setActiveTab('inspector')} className={`flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm ${activeTab === 'inspector' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
@@ -713,6 +718,63 @@ const deleteNode = useCallback((nodeId: string) => {
                             >
                                 Close
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Help Modal */}
+            {showHelp && (
+                <div
+                    className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+                    onClick={() => setShowHelp(false)}
+                >
+                    <div
+                        className="glass-card rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl md:text-3xl font-bold text-gradient">How the Node System Works</h2>
+                            <button
+                                onClick={() => setShowHelp(false)}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="text-gray-300 space-y-4 leading-relaxed">
+                            <p>
+                                The Quantum Box uses a powerful node-based system for visual concept mapping and AI prompt generation. Here's how it works:
+                            </p>
+                            <div className="space-y-3">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">1. Creating Nodes</h3>
+                                    <p>Nodes represent different concepts, parameters, or ideas. Drag from the Tag Library on the left to create input nodes (like character traits, settings, or styles) and connect them to build complex relationships.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">2. Node Types</h3>
+                                    <ul className="list-disc list-inside ml-4 space-y-1">
+                                        <li><strong>Text Nodes:</strong> Free-form input for concepts, descriptions, or ideas</li>
+                                        <li><strong>Option Nodes:</strong> Predefined choices for specific parameters like shot types or lighting styles</li>
+                                        <li><strong>Output Nodes:</strong> The final destination where you generate AI prompts</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">3. Weighting System</h3>
+                                    <p>Each node can be resized to adjust its importance (planet size). Use the Tag Weights panel on the right to fine-tune how strongly each tag category affects the final output.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">4. Connections</h3>
+                                    <p>Click and drag from the colored connectors on nodes to create harmony (solid blue lines) or tension (dashed red lines) relationships. Toggle connection types by clicking the H/T markers.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">5. Generating Output</h3>
+                                    <p>Connect your nodes to an AI Prompt Output node, adjust the Harmony/Tension slider at the bottom, then click Generate. The yellow Sun in the center reveals your AI-generated prompts when clicked.</p>
+                                </div>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-6">
+                                Experiment with different connections, weights, and node arrangements to discover unique creative combinations! The AI analyzes the spatial relationships and weights to create coherent prompts.
+                            </p>
                         </div>
                     </div>
                 </div>
