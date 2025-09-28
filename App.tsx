@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import type { BuildType, Workflow, BuildContext, Seed } from './types';
 import { BUILDS, WORKFLOWS, TAG_GROUPS, NODE_TEMPLATES } from './constants';
 import LandingPage from './components/LandingPage';
-import Sandbox from './components/Sandbox';
+import Workspace from './components/Workspace';
 import BuildScreen from './components/BuildScreen';
 import QuantumBox from './components/QuantumBox';
 
@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const [appMode, setAppMode] = useState<AppMode>('landing');
   
   // State for classic build system
-  const [sandboxContext, setSandboxContext] = useState<Record<string, string>>({});
+  const [sandboxContext] = useState<Record<string, string>>({});
   const [buildContext, setBuildContext] = useState<BuildContext>({});
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
   const [activeBuildType, setActiveBuildType] = useState<BuildType>(BUILDS[0].id);
@@ -68,7 +68,7 @@ const App: React.FC = () => {
 
   const handleStartWorkflow = (workflow: Workflow) => {
     setActiveWorkflow(workflow);
-    setActiveBuildType(workflow.builds[0]);
+    setActiveBuildType(workflow.builds?.[0] || BUILDS[0]);
     setAppMode('build');
   };
   
@@ -76,10 +76,6 @@ const App: React.FC = () => {
     setAppMode('quantum_box');
   };
 
-  const handleExitSandbox = (finalContext: Record<string, string>) => {
-    setSandboxContext(finalContext);
-    setAppMode('landing');
-  };
 
   const handleGoBackToLanding = () => {
     setActiveWorkflow(null);
@@ -92,10 +88,10 @@ const App: React.FC = () => {
   
   const handleCompleteBuild = useCallback((buildType: BuildType, newSeeds: Seed[]) => {
     setBuildContext(prev => {
-        const existingSeeds = prev[buildType]?.seeds || [];
+        const existingSeeds = prev[buildType.id]?.seeds || [];
         return {
             ...prev,
-            [buildType]: {
+            [buildType.id]: {
                 seeds: [...existingSeeds, ...newSeeds]
             }
         };
@@ -124,12 +120,8 @@ const App: React.FC = () => {
         );
       case 'sandbox':
         return (
-          <Sandbox
-            context={sandboxContext}
-            onContextChange={setSandboxContext}
-            onExit={handleExitSandbox}
-            onGoBackToLanding={handleGoBackToLanding}
-            activeWorkflow={activeWorkflow}
+          <Workspace
+            onGoHome={handleGoBackToLanding}
             {...commonWeightProps}
           />
         );
@@ -171,8 +163,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen font-sans gradient-bg text-gray-100 overflow-hidden">
-        <div className="gradient-overlay h-full">
+    <div className="min-h-screen font-sans gradient-bg text-gray-100 overflow-y-auto">
+        <div className="gradient-overlay min-h-full">
             {renderContent()}
         </div>
     </div>

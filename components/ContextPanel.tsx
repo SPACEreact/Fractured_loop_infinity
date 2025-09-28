@@ -1,7 +1,7 @@
 
 
 import React, { useState } from 'react';
-import type { BuildContext, Seed, BuildType } from '../types';
+import type { BuildContext, Seed, Question } from '../types';
 import { ALL_TAGS, TAG_GROUPS, NODE_TEMPLATES } from '../constants';
 import { DocumentTextIcon, FilmIcon, PhotoIcon, ScissorsIcon, VideoCameraIcon, SparklesIcon } from './IconComponents';
 
@@ -42,7 +42,7 @@ const SeedCard: React.FC<{ seed: Seed }> = ({ seed }) => {
 }
 
 const SeedsView: React.FC<{ buildContext: BuildContext }> = ({ buildContext }) => {
-    const allSeeds = Object.keys(buildContext).flatMap(key => buildContext[key as BuildType]?.seeds || []);
+    const allSeeds = Object.keys(buildContext).flatMap(key => buildContext[key]?.seeds || []);
 
     return (
         <div className="p-2">
@@ -54,14 +54,14 @@ const SeedsView: React.FC<{ buildContext: BuildContext }> = ({ buildContext }) =
             ) : (
                 <div className="space-y-4">
                 {Object.keys(buildContext).map((buildType) => {
-                    const buildData = buildContext[buildType as BuildType];
+                    const buildData = buildContext[buildType];
                     if (!buildData || buildData.seeds.length === 0) return null;
                     const buildTypeTitle = buildType.charAt(0).toUpperCase() + buildType.slice(1);
                     return (
                         <div key={buildType}>
                             <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-2">{buildTypeTitle} Seeds</h3>
                             <div className="space-y-2">
-                               {buildData.seeds.map(seed => <SeedCard key={seed.id} seed={seed} />)}
+                               {buildData.seeds.map((seed: Seed) => <SeedCard key={seed.id} seed={seed} />)}
                             </div>
                         </div>
                     )
@@ -86,7 +86,7 @@ const TagsView: React.FC<{ sandboxContext: Record<string, string> }> = ({ sandbo
             ) : (
                 <div className="space-y-4">
                     {Object.keys(ALL_TAGS).map(buildType => {
-                        const tagsForBuild = ALL_TAGS[buildType as BuildType];
+                        const tagsForBuild = ALL_TAGS[buildType as keyof typeof ALL_TAGS];
                         const filledTagsForBuild = tagsForBuild.filter(tag => filledTags.includes(tag.id));
                         
                         if (filledTagsForBuild.length === 0) return null;
@@ -97,7 +97,7 @@ const TagsView: React.FC<{ sandboxContext: Record<string, string> }> = ({ sandbo
                             <div key={buildType}>
                                 <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-2">{buildTypeTitle} Tags</h3>
                                 <div className="space-y-2">
-                                    {filledTagsForBuild.map(tag => (
+                                    {filledTagsForBuild.map((tag: Question) => (
                                         <div key={tag.id} className="text-sm bg-gray-700/50 p-3 rounded-lg">
                                             <p className="font-semibold text-gray-300 truncate">{tag.text}</p>
                                             <p className="text-indigo-300 mt-1 pl-2 border-l-2 border-indigo-500">{sandboxContext[tag.id]}</p>
@@ -160,7 +160,7 @@ const WeightsView: React.FC<Omit<ContextPanelProps, 'mode' | 'buildContext' | 's
                     <details key={groupName} className="bg-gray-700/50 rounded-lg mb-2" open>
                         <summary className="font-bold text-gray-100 p-3 cursor-pointer">{groupName}</summary>
                         <div className="p-3 border-t border-gray-600 space-y-3">
-                            {tagIds.map(tagId => {
+                            {tagIds.map((tagId: string) => {
                                 const tag = NODE_TEMPLATES[tagId];
                                 if (!tag) return null;
                                 return (

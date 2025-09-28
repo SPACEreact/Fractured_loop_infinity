@@ -1,84 +1,72 @@
-
-import React from 'react';
-
-// --- V2 Types (Classic Build System) ---
-
-export enum ChatRole {
-    USER = 'user',
-    MODEL = 'model',
-    MODEL_OUTPUT = 'model-output', // Special role for final, formatted output
-}
-
-export interface Message {
-    role: ChatRole;
-    content: string;
-}
-
-export type BuildType = 'story' | 'shot' | 'image' | 'video' | 'edit';
-
 export interface Question {
-    id: string; // Corresponds to a tag
-    text: string;
-    type: 'text' | 'option';
-    options?: string[];
-}
-
-export interface Build {
-    id: BuildType;
-    name: string;
-    description: string;
-    icon: React.ReactNode;
-    questions: Question[];
+  id: string;
+  text: string;
+  type: 'text' | 'option';
+  options?: string[];
 }
 
 export interface Workflow {
-    id: string;
-    name: string;
-    description: string;
-    builds: BuildType[];
+  id: string;
+  name: string;
+  description: string;
+  builds?: BuildType[];
+}
+
+export interface BuildType {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface BuildContext {
+  [key: string]: {
+    seeds: Seed[];
+  };
 }
 
 export interface Seed {
-    id: string;
-    sourceBuild: BuildType;
-    summary: string;
-    data: Record<string, string>;
+  id: string;
+  content: string;
+  tags: string[];
+  createdAt: Date;
+  sourceBuild: string;
+  summary: string;
 }
 
-export type BuildContext = Partial<Record<BuildType, {
-    seeds: Seed[];
-}>>;
-
-// --- V3 Types (Quantum Box) ---
-
-export type NodeType = 'story' | 'shot' | 'image' | 'video' | 'edit' | 'core';
-
-export interface NodeOption {
-    value: string;
-    label: string;
+export enum ChatRole {
+  USER = 'USER',
+  MODEL = 'MODEL'
 }
 
+export interface Message {
+  role: ChatRole;
+  content: string;
+}
+
+// QuantumBox types
 export interface Node {
-    id: string;
-    type: string; // Corresponds to tag ID
-    name: string;
-    description: string;
-    category: string;
-    nodeType: 'input' | 'option' | 'text' | 'output';
-    options?: NodeOption[];
-    position: { x: number; y: number };
-    value: string;
-    size: number; // Represents weight
+  id: string;
+  position: { x: number; y: number };
+  size: number;
+  category: string;
+  type: string;
+  name: string;
+  description: string;
+  nodeType: 'input' | 'option' | 'text' | 'output';
+  value?: string;
+  options?: { value: string; label: string; }[];
+  content?: string;
+  weight?: number;
 }
 
 export interface Connection {
-    id: string;
-    fromNodeId: string;
-    toNodeId: string;
-    type: 'harmony' | 'tension';
+  id: string;
+  from: string;
+  to: string;
+  type: 'harmony' | 'tension';
 }
 
 export interface NodeGraph {
-    nodes: Node[];
-    connections: Connection[];
+  nodes: Node[];
+  connections: Connection[];
 }
