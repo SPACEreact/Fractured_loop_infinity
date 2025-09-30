@@ -1,172 +1,154 @@
 
 
 import React, { useState, useCallback } from 'react';
-import type { BuildType, Workflow, BuildContext, Seed } from './types';
-import { BUILDS, WORKFLOWS, TAG_GROUPS, NODE_TEMPLATES } from './constants';
-import LandingPage from './components/LandingPage';
+import type { Project, Asset, CanvasNode, CanvasConnection } from './types';
 import Workspace from './components/Workspace';
-import BuildScreen from './components/BuildScreen';
-import QuantumBox from './components/QuantumBox';
-
-type AppMode = 'landing' | 'sandbox' | 'build' | 'quantum_box';
 
 const App: React.FC = () => {
-  const [appMode, setAppMode] = useState<AppMode>('landing');
-  
-  // State for classic build system
-  const [sandboxContext] = useState<Record<string, string>>({});
-  const [buildContext, setBuildContext] = useState<BuildContext>({});
-  const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
-  const [activeBuildType, setActiveBuildType] = useState<BuildType>(BUILDS[0].id);
+  // Sample assets for initial project state
+  const sampleAssets: Asset[] = [
+    {
+      id: 'asset-1',
+      type: 'character',
+      name: 'Protagonist',
+      content: 'Name: Alex Rivera\nAge: 28\nAppearance: Short dark hair, athletic build, determined eyes\nPersonality: Brave, resourceful, compassionate\nBackground: Former journalist turned activist\nGoals: Expose corporate corruption',
+      tags: ['character', 'protagonist'],
+      createdAt: new Date(),
+      summary: 'The main character, a brave activist fighting corruption'
+    },
+    {
+      id: 'asset-2',
+      type: 'plot_point',
+      name: 'Inciting Incident',
+      content: 'Event: Alex discovers leaked documents revealing environmental crimes\nImpact: Forces Alex to go on the run\nTiming: Act 1, 15 minutes in\nCharacters involved: Alex, Corporate Executive',
+      tags: ['plot', 'inciting'],
+      createdAt: new Date(),
+      summary: 'The event that kicks off the main conflict'
+    },
+    {
+      id: 'asset-3',
+      type: 'shot_card',
+      name: 'Opening Shot',
+      content: 'Shot type: Wide establishing\nSubject: City skyline at dawn\nAngle: Low angle looking up\nLighting: Golden hour\nMood: Hopeful, determined',
+      tags: ['shot', 'visual', 'opening'],
+      createdAt: new Date(),
+      summary: 'The first shot establishing the story world'
+    },
+    {
+      id: 'asset-4',
+      type: 'master_style',
+      name: 'Neo-Noir Thriller',
+      content: 'Visual style: High contrast, shadows and light\nTone: Tense, suspenseful\nColor palette: Blues, grays, occasional red accents\nNarrative approach: Non-linear storytelling with flashbacks',
+      tags: ['style', 'master', 'noir'],
+      createdAt: new Date(),
+      summary: 'The overall aesthetic and narrative style'
+    }
+  ];
+
+  const sampleNodes: CanvasNode[] = [
+    {
+      id: 'node-1',
+      position: { x: 100, y: 100 },
+      size: 80,
+      assetId: 'asset-1',
+      name: 'Protagonist',
+      description: 'The main character, a brave activist fighting corruption'
+    },
+    {
+      id: 'node-2',
+      position: { x: 300, y: 150 },
+      size: 80,
+      assetId: 'asset-2',
+      name: 'Inciting Incident',
+      description: 'The event that kicks off the main conflict'
+    },
+    {
+      id: 'node-3',
+      position: { x: 500, y: 200 },
+      size: 80,
+      assetId: 'asset-3',
+      name: 'Opening Shot',
+      description: 'The first shot establishing the story world'
+    },
+    {
+      id: 'node-4',
+      position: { x: 250, y: 350 },
+      size: 80,
+      assetId: 'asset-4',
+      name: 'Neo-Noir Thriller',
+      description: 'The overall aesthetic and narrative style'
+    }
+  ];
+
+  const sampleConnections: CanvasConnection[] = [
+    {
+      id: 'conn-1',
+      from: 'node-1',
+      to: 'node-2',
+      type: 'harmony',
+      harmonyLevel: 70
+    },
+    {
+      id: 'conn-2',
+      from: 'node-2',
+      to: 'node-3',
+      type: 'tension',
+      harmonyLevel: 30
+    },
+    {
+      id: 'conn-3',
+      from: 'node-4',
+      to: 'node-1',
+      type: 'harmony',
+      harmonyLevel: 80
+    }
+  ];
+
+  // Single unified project state
+  const [project, setProject] = useState<Project>({
+    id: 'project-1',
+    name: 'My AI Filmmaker Project',
+    assets: sampleAssets,
+    canvas: {
+      nodes: sampleNodes,
+      connections: sampleConnections
+    },
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
 
   // Global state for Tag Weighting System
-  const [tagWeights, setTagWeights] = useState<Record<string, number>>(() => {
-    const allTagTemplates = Object.values(NODE_TEMPLATES).filter(t => t.nodeType !== 'output');
-    const initialWeights: Record<string, number> = {};
-    allTagTemplates.forEach(template => {
-        initialWeights[template.type] = 1.0;
-    });
-    return initialWeights;
-  });
+  const [tagWeights, setTagWeights] = useState<Record<string, number>>({});
   const [styleRigidity, setStyleRigidity] = useState<number>(50);
   const [isWeightingEnabled, setIsWeightingEnabled] = useState<boolean>(false);
 
   const handleTagWeightChange = useCallback((tagId: string, newWeight: number) => {
     setTagWeights(prevWeights => {
-        const group = Object.entries(TAG_GROUPS).find(([_, tagIds]) => tagIds.includes(tagId));
-        
-        if (!group || !isWeightingEnabled) {
-            return { ...prevWeights, [tagId]: newWeight };
-        }
-
-        const [, tagIdsInGroup] = group;
-        const otherTagsInGroup = tagIdsInGroup.filter(id => id !== tagId);
-        
-        if (otherTagsInGroup.length === 0) {
-            return { ...prevWeights, [tagId]: newWeight };
-        }
-
-        const oldWeight = prevWeights[tagId];
-        const delta = newWeight - oldWeight;
-        const distribution = -delta / otherTagsInGroup.length;
-        
-        const newWeights = { ...prevWeights, [tagId]: newWeight };
-
-        otherTagsInGroup.forEach(id => {
-            const proposedWeight = (prevWeights[id] || 1.0) + distribution;
-            newWeights[id] = Math.max(0, Math.min(2.0, proposedWeight)); // Clamp between 0 and 2
-        });
-
-        return newWeights;
+      if (!isWeightingEnabled) {
+        return { ...prevWeights, [tagId]: newWeight };
+      }
+      // Distribute weight changes within group
+      // (Implementation can be added here if needed)
+      return { ...prevWeights, [tagId]: newWeight };
     });
   }, [isWeightingEnabled]);
 
-
-  const handleStartSandbox = () => {
-    setAppMode('sandbox');
-  };
-
-  const handleStartWorkflow = (workflow: Workflow) => {
-    setActiveWorkflow(workflow);
-    setActiveBuildType(workflow.builds?.[0] || BUILDS[0]);
-    setAppMode('build');
-  };
-  
-  const handleStartQuantumBox = () => {
-    setAppMode('quantum_box');
-  };
-
-
-  const handleGoBackToLanding = () => {
-    setActiveWorkflow(null);
-    setAppMode('landing');
-  };
-  
-  const handleSelectBuild = (buildType: BuildType) => {
-    setActiveBuildType(buildType);
-  };
-  
-  const handleCompleteBuild = useCallback((buildType: BuildType, newSeeds: Seed[]) => {
-    setBuildContext(prev => {
-        const existingSeeds = prev[buildType.id]?.seeds || [];
-        return {
-            ...prev,
-            [buildType.id]: {
-                seeds: [...existingSeeds, ...newSeeds]
-            }
-        };
-    });
-  }, []);
-
-  const commonWeightProps = {
-    tagWeights,
-    styleRigidity,
-    isWeightingEnabled,
-    onTagWeightChange: handleTagWeightChange,
-    onStyleRigidityChange: setStyleRigidity,
-    onWeightingToggle: setIsWeightingEnabled,
-  };
-
-  const renderContent = () => {
-    switch (appMode) {
-      case 'landing':
-        return (
-          <LandingPage
-            workflows={WORKFLOWS}
-            onStartSandbox={handleStartSandbox}
-            onStartWorkflow={handleStartWorkflow}
-            onStartQuantumBox={handleStartQuantumBox}
-          />
-        );
-      case 'sandbox':
-        return (
-          <Workspace
-            onGoHome={handleGoBackToLanding}
-            {...commonWeightProps}
-          />
-        );
-      case 'build':
-        if (!activeWorkflow) {
-            // Should not happen, but as a fallback
-            handleGoBackToLanding();
-            return null;
-        }
-        return (
-            <BuildScreen 
-                workflow={activeWorkflow}
-                selectedBuild={activeBuildType}
-                onSelectBuild={handleSelectBuild}
-                onGoBackToLanding={handleGoBackToLanding}
-                sandboxContext={sandboxContext}
-                buildContext={buildContext}
-                onCompleteBuild={handleCompleteBuild}
-                {...commonWeightProps}
-            />
-        )
-      case 'quantum_box':
-        return (
-          <QuantumBox
-            onGoHome={handleGoBackToLanding}
-            {...commonWeightProps}
-          />
-        );
-      default:
-        return (
-          <LandingPage
-            workflows={WORKFLOWS}
-            onStartSandbox={handleStartSandbox}
-            onStartWorkflow={handleStartWorkflow}
-            onStartQuantumBox={handleStartQuantumBox}
-          />
-        );
-    }
-  };
+  // Handlers to update project state (add/remove assets, nodes, connections, etc.) can be added here
 
   return (
     <div className="min-h-screen font-sans gradient-bg text-gray-100 overflow-y-auto">
-        <div className="gradient-overlay min-h-full">
-            {renderContent()}
-        </div>
+      <div className="gradient-overlay min-h-full">
+        <Workspace
+          project={project}
+          setProject={setProject}
+          tagWeights={tagWeights}
+          styleRigidity={styleRigidity}
+          isWeightingEnabled={isWeightingEnabled}
+          onTagWeightChange={handleTagWeightChange}
+          onStyleRigidityChange={setStyleRigidity}
+          onWeightingToggle={setIsWeightingEnabled}
+        />
+      </div>
     </div>
   );
 };

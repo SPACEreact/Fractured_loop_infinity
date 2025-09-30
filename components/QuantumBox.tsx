@@ -1,3 +1,28 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useRef, useCallback, MouseEvent as ReactMouseEvent, useEffect } from 'react';
 import type { Node, Connection, NodeGraph } from '../types';
 import { NODE_TEMPLATES, NodeTemplate, TAG_GROUPS } from '../constants';
@@ -75,7 +100,9 @@ const ConnectionComponent = React.memo<{
     type: 'harmony' | 'tension';
     id: string;
     onToggle: (id: string) => void;
-}>(({ fromPos, toPos, type, id, onToggle }) => {
+    onSelect: (id: string) => void;
+    isSelected: boolean;
+}>(({ fromPos, toPos, type, id, onToggle, onSelect, isSelected }) => {
     const path = `M ${fromPos.x} ${fromPos.y} C ${fromPos.x + 80} ${fromPos.y}, ${toPos.x - 80} ${toPos.y}, ${toPos.x} ${toPos.y}`;
     const strokeColor = type === 'harmony' ? 'rgb(59 130 246)' : 'rgb(239 68 68)';
     const midX = (fromPos.x + toPos.x) / 2;
@@ -84,10 +111,10 @@ const ConnectionComponent = React.memo<{
     const dashArray = type === 'tension' ? '5,5' : 'none';
 
     return (
-        <g>
-            <path d={path} stroke={strokeColor} strokeWidth="3" fill="none" className={`pointer-events-none ${glowClass}`} strokeDasharray={dashArray} />
-            <g transform={`translate(${midX - 10}, ${midY - 10})`} className="cursor-pointer" onClick={() => onToggle(id)}>
-                <rect width="20" height="20" rx="5" fill={strokeColor} />
+        <g onClick={() => onSelect(id)}>
+            <path d={path} stroke={strokeColor} strokeWidth={isSelected ? "5" : "3"} fill="none" className={`pointer-events-none ${glowClass}`} strokeDasharray={dashArray} />
+            <g transform={`translate(${midX - 10}, ${midY - 10})`} className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onToggle(id); }}>
+                <rect width="20" height="20" rx="5" fill={strokeColor} stroke={isSelected ? "#fff" : "none"} strokeWidth={isSelected ? "2" : "0"} />
                 <text x="10" y="14" textAnchor="middle" fill="white" fontSize="12">{type === 'harmony' ? 'H' : 'T'}</text>
             </g>
             {/* Tooltip on hover */}
@@ -105,7 +132,7 @@ const NodeLibraryPanel = ({ onDragStart, onPreview }: {
     onPreview: (template: NodeTemplate) => void;
 }) => {
     const groupedNodes = Object.values(NODE_TEMPLATES).reduce((acc, template) => {
-        const category = template.category;
+        const category = (template as any).category || 'Uncategorized';
         if (!acc[category]) acc[category] = [];
         acc[category].push(template);
         return acc;
@@ -122,7 +149,7 @@ const NodeLibraryPanel = ({ onDragStart, onPreview }: {
                     <div key={category}>
                         <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-2">{category}</h3>
                         <div className="space-y-2">
-                            {templates.map(template => (
+                            {(templates as NodeTemplate[]).map(template => (
                                 <div
                                     key={template.type}
                                     className="glass-card p-3 cursor-grab active:cursor-grabbing hover-lift transition-all"
@@ -221,6 +248,61 @@ const InspectorPanel = ({ node, previewTemplate, onValueChange, onNodeDelete, on
     return null;
 };
 
+const ConnectionsPanel = ({
+    connections, nodes, selectedConnectionId, onConnectionHarmonyChange, onConnectionDelete
+}: {
+    connections: Connection[];
+    nodes: Node[];
+    selectedConnectionId: string | null;
+    onConnectionHarmonyChange: (id: string, harmonyLevel: number) => void;
+    onConnectionDelete: (id: string) => void;
+}) => {
+    const selectedConnection = connections.find(c => c.id === selectedConnectionId);
+
+    return (
+        <div className="p-2">
+            {selectedConnection ? (
+                <div className="space-y-4">
+                    <div className="glass-card p-3">
+                        <h3 className="font-bold text-gray-100">Connection Details</h3>
+                        <p className="text-sm text-gray-400 mt-1">
+                            From: {nodes.find(n => n.id === selectedConnection.from)?.name} <br />
+                            To: {nodes.find(n => n.id === selectedConnection.to)?.name}
+                        </p>
+                    </div>
+
+                    <div className="glass-card p-3">
+                        <label className="block text-xs font-semibold uppercase text-gray-500 mb-2">Harmony Level</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={selectedConnection.harmonyLevel}
+                            onChange={(e) => onConnectionHarmonyChange(selectedConnection.id, parseInt(e.target.value, 10))}
+                            className="w-full"
+                        />
+                        <div className="text-xs text-gray-400 flex justify-between mt-1">
+                            <span>Tension</span>
+                            <span>Harmony</span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => onConnectionDelete(selectedConnection.id)}
+                        className="w-full text-center bg-rose-800/50 text-rose-300 hover:bg-rose-700/50 font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Delete Connection
+                    </button>
+                </div>
+            ) : (
+                <div className="text-center text-sm text-gray-500 mt-8 p-4">
+                    Select a connection on the canvas to see details.
+                </div>
+            )}
+        </div>
+    );
+};
+
 const WeightsPanel = ({
     isWeightingEnabled, onWeightingToggle, styleRigidity, onStyleRigidityChange, tagWeights, onTagWeightChange
 }: {
@@ -298,6 +380,7 @@ const QuantumBox = (props: QuantumBoxProps) => {
     const { onGoHome, tagWeights, styleRigidity, isWeightingEnabled } = props;
     const [graph, setGraph] = useState<NodeGraph>({ nodes: [], connections: [] });
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
     const [previewTemplate, setPreviewTemplate] = useState<NodeTemplate | null>(null);
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -416,7 +499,7 @@ const deleteNode = useCallback((nodeId: string) => {
                 const toNodeId = toNode.id;
                 const existing = graph.connections.find((c: Connection) => (c.from === fromNodeId && c.to === toNodeId) || (c.from === toNodeId && c.to === fromNodeId));
                 if (!existing) {
-                     setGraph((g: NodeGraph) => ({...g, connections: [...g.connections, { id: crypto.randomUUID(), from: fromNodeId, to: toNodeId, type: 'harmony' }] }));
+                     setGraph((g: NodeGraph) => ({...g, connections: [...g.connections, { id: crypto.randomUUID(), from: fromNodeId, to: toNodeId, type: 'harmony', harmonyLevel: 50 }] }));
                 }
             }
         }
@@ -456,6 +539,25 @@ const deleteNode = useCallback((nodeId: string) => {
                 c.id === connId ? { ...c, type: c.type === 'harmony' ? 'tension' : 'harmony' } : c
             )
         }));
+    };
+
+    const handleConnectionHarmonyChange = (connId: string, harmonyLevel: number) => {
+        setGraph((g: NodeGraph) => ({
+            ...g,
+            connections: g.connections.map((c: Connection) =>
+                c.id === connId ? { ...c, harmonyLevel } : c
+            )
+        }));
+    };
+
+    const handleConnectionDelete = (connId: string) => {
+        setGraph((g: NodeGraph) => ({
+            ...g,
+            connections: g.connections.filter((c: Connection) => c.id !== connId)
+        }));
+        if (selectedConnectionId === connId) {
+            setSelectedConnectionId(null);
+        }
     };
 
     const handlePreviewNode = (template: NodeTemplate) => {
@@ -611,6 +713,8 @@ const deleteNode = useCallback((nodeId: string) => {
                                 toPos={getNodeConnectorPos(conn.to)}
                                 type={conn.type}
                                 onToggle={handleToggleConnectionType}
+                                onSelect={setSelectedConnectionId}
+                                isSelected={selectedConnectionId === conn.id}
                             />
                         ))}
                          {drawingConnection && <path d={`M ${drawingConnection.from.x} ${drawingConnection.from.y} L ${drawingConnection.to.x} ${drawingConnection.to.y}`} stroke="#fuchsia" strokeWidth="2" strokeDasharray="5,5" />}
@@ -637,6 +741,9 @@ const deleteNode = useCallback((nodeId: string) => {
                             <button onClick={() => setActiveTab('inspector')} className={`flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm ${activeTab === 'inspector' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
                                 Inspector
                             </button>
+                            <button onClick={() => setActiveTab('connections')} className={`flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm ${activeTab === 'connections' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                                Connections
+                            </button>
                             <button onClick={() => setActiveTab('weights')} className={`flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm ${activeTab === 'weights' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
                                 Tag Weights
                             </button>
@@ -650,6 +757,15 @@ const deleteNode = useCallback((nodeId: string) => {
                                 onValueChange={updateNodeValue}
                                 onNodeDelete={deleteNode}
                                 onSizeChange={updateNodeSize}
+                            />
+                        )}
+                        {activeTab === 'connections' && (
+                            <ConnectionsPanel
+                                connections={graph.connections}
+                                nodes={graph.nodes}
+                                selectedConnectionId={selectedConnectionId}
+                                onConnectionHarmonyChange={handleConnectionHarmonyChange}
+                                onConnectionDelete={handleConnectionDelete}
                             />
                         )}
                         {activeTab === 'weights' && <WeightsPanel {...props} />}

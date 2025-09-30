@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import type { BuildContext, Seed, Question } from '../types';
 import { ALL_TAGS, TAG_GROUPS, NODE_TEMPLATES } from '../constants';
-import { DocumentTextIcon, FilmIcon, PhotoIcon, ScissorsIcon, VideoCameraIcon, SparklesIcon } from './IconComponents';
+import { DocumentTextIcon, FilmIcon, PhotoIcon, ScissorsIcon, VideoCameraIcon, SparklesIcon, QuestionMarkCircleIcon } from './IconComponents';
 
 interface ContextPanelProps {
   mode: 'build' | 'sandbox';
@@ -87,7 +87,7 @@ const TagsView: React.FC<{ sandboxContext: Record<string, string> }> = ({ sandbo
                 <div className="space-y-4">
                     {Object.keys(ALL_TAGS).map(buildType => {
                         const tagsForBuild = ALL_TAGS[buildType as keyof typeof ALL_TAGS];
-                        const filledTagsForBuild = tagsForBuild.filter(tag => filledTags.includes(tag.id));
+                        const filledTagsForBuild = (tagsForBuild as Question[]).filter(tag => filledTags.includes(tag.id));
                         
                         if (filledTagsForBuild.length === 0) return null;
 
@@ -120,7 +120,10 @@ const WeightsView: React.FC<Omit<ContextPanelProps, 'mode' | 'buildContext' | 's
         <div className="p-2">
             <div className="bg-gray-700/50 p-3 rounded-lg mb-4">
                 <div className="flex justify-between items-center">
-                    <label htmlFor="enable-weighting" className="font-bold text-gray-100">Enable Tag Weighting</label>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="enable-weighting" className="font-bold text-gray-100">Enable Tag Weighting</label>
+                        <QuestionMarkCircleIcon className="w-4 h-4 text-gray-400" title="Toggle to enable or disable tag weighting for AI responses" />
+                    </div>
                     <button
                         role="switch"
                         aria-checked={isWeightingEnabled}

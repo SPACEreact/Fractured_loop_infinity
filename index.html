@@ -5,6 +5,64 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3cpath fill='%23a78bfa' d='M83.3,27.3c-2.7-2.1-5.8-3.4-9.2-3.8c-0.8-3.4-2.5-6.4-5-8.8c-3.1-3-7.1-4.7-11.4-4.7c-4.4,0-8.5,1.8-11.6,4.9c-2.4,2.4-4.1,5.4-4.8,8.7c-2.3,0.1-4.5,0.6-6.6,1.5c-5.4,2.3-9.5,6.7-11.3,12c-0.8,2.3-1.2,4.8-1.2,7.3c0,5.2,1.7,10.1,4.8,14.1c-2.3,2.4-3.8,5.6-4.1,9c-0.1,0.8-0.1,1.7-0.1,2.5v2.5h7.2v-2.5c0-0.3,0-0.6,0-0.9c0.2-4,2.3-7.5,5.3-9.7h0.1c-0.1-0.3-0.2-0.5-0.2-0.8c0-3,1.2-5.7,3.2-7.7c2-2,4.7-3.2,7.7-3.2c3,0,5.7,1.2,7.7,3.2c2,2,3.2,4.7,3.2,7.7c0,0.3-0.1,0.6-0.2,0.9h0.1c2.8,2.1,4.7,5.3,5.1,8.8c0.1,0.6,0.1,1.2,0.1,1.8v2.5h7.2v-2.5c0-0.6,0-1.2-0.1-1.8c-0.4-3.5-2.3-6.7-5.1-8.8h-0.1c0.1-0.3,0.2-0.6,0.2-0.9c0-3-1.2-5.7-3.2-7.7c-2-2-4.7-3.2-7.7-3.2c-3,0-5.7,1.2-7.7,3.2c-2,2-3.2,4.7-3.2,7.7c0,0.3,0,0.6,0.1,0.9h-0.1c-0.2-0.1-0.4-0.1-0.6-0.2c-1.3-0.4-2.6-1-3.7-1.7c-2-1.3-3.6-3-4.5-5c-1-2-1.5-4.3-1.5-6.6c0-4.6,1.5-8.8,4.1-12.1c1.5-1.9,3.4-3.4,5.6-4.5c2.9-1.3,6.1-2,9.4-2c3.4,0,6.7,0.7,9.6,2.1c2.1,1,3.9,2.4,5.3,4.1c2.2,2.6,3.6,5.9,3.9,9.4h0.1c2.6,0.2,5,1.1,6.9,2.6c1.1,0.9,2,2,2.7,3.2c1.2,2.1,1.9,4.5,1.9,7c0,3-0.8,5.7-2.3,8h0.1c2.6-0.3,5.3,0.3,7.5,1.8c2.7,1.7,4.6,4.3,5.4,7.4c0.1,0.5,0.2,1,0.2,1.6v2.5h7.2v-2.5c0-0.5-0.1-1.1-0.2-1.6c-0.8-3.1-2.7-5.7-5.4-7.4c-2.2-1.5-4.9-2.1-7.5-1.8h-0.1c-1.5-2.3-2.3-5-2.3-8C85.2,31.8,84.5,29.4,83.3,27.3z'/%3e%3c/svg%3e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Assistant Director</title>
+    <style>
+      @keyframes atom-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .atom-spinner {
+        display: inline-block;
+        position: relative;
+        width: 48px;
+        height: 48px;
+      }
+      .atom-spinner-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      .orbit {
+        position: absolute;
+        border: 2px solid #4f46e5; /* Indigo-600 */
+        border-radius: 50%;
+        animation: atom-spin 2s linear infinite;
+      }
+      .orbit1 {
+        width: 48px;
+        height: 48px;
+        top: 0;
+        left: 0;
+        animation-duration: 2s;
+      }
+      .orbit2 {
+        width: 36px;
+        height: 36px;
+        top: 6px;
+        left: 6px;
+        animation-duration: 3s;
+        animation-direction: reverse;
+      }
+      .orbit3 {
+        width: 24px;
+        height: 24px;
+        top: 12px;
+        left: 12px;
+        animation-duration: 1.5s;
+      }
+      .core {
+        position: absolute;
+        top: 18px;
+        left: 18px;
+        width: 12px;
+        height: 12px;
+        background-color: #4f46e5; /* Indigo-600 */
+        border-radius: 50%;
+      }
+    </style>
 </head>
   <body class="bg-gray-900 text-white">
     <div id="root"></div>

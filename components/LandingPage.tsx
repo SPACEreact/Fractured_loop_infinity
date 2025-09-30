@@ -1,35 +1,19 @@
 import React from 'react';
-import type { Workflow } from 'types';
+import type { Workflow } from '../constants';
 import { FracturedLoopLogo, ChatBubbleLeftRightIcon, ArrowRightOnRectangleIcon, CubeTransparentIcon } from './IconComponents';
 
 interface LandingPageProps {
-  onEnterQuantumBox: () => void;
-  onEnterWorkspace: () => void;
+  workflows: Workflow[];
+  onStartSandbox: () => void;
+  onStartWorkflow: (workflow: Workflow) => void;
+  onStartQuantumBox: () => void;
 }
 
-const LandingPage = ({ onEnterQuantumBox, onEnterWorkspace }: LandingPageProps) => {
+const LandingPage = ({ workflows, onStartSandbox, onStartWorkflow, onStartQuantumBox }: LandingPageProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 flex flex-col">
       <header className="p-6 flex justify-between items-center">
         <FracturedLoopLogo className="w-12 h-12" />
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onEnterWorkspace}
-            className="flex items-center gap-2 text-gray-300 font-medium py-2 px-4 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200"
-            title="Enter Workspace"
-          >
-            <ChatBubbleLeftRightIcon className="w-5 h-5" />
-            <span>Workspace</span>
-          </button>
-          <button
-            onClick={onEnterQuantumBox}
-            className="flex items-center gap-2 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-500 transition-colors duration-200"
-            title="Enter Quantum Box"
-          >
-            <CubeTransparentIcon className="w-5 h-5" />
-            <span>Quantum Box</span>
-          </button>
-        </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center p-6">
@@ -44,7 +28,7 @@ const LandingPage = ({ onEnterQuantumBox, onEnterWorkspace }: LandingPageProps) 
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-              onClick={onEnterQuantumBox}
+              onClick={onStartQuantumBox}
               className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-8 rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               <CubeTransparentIcon className="w-6 h-6" />
@@ -52,12 +36,27 @@ const LandingPage = ({ onEnterQuantumBox, onEnterWorkspace }: LandingPageProps) 
               <ArrowRightOnRectangleIcon className="w-6 h-6" />
             </button>
             <button
-              onClick={onEnterWorkspace}
+              onClick={onStartSandbox}
               className="flex items-center gap-3 bg-gray-700/50 text-gray-300 font-medium py-4 px-8 rounded-xl hover:bg-gray-600/50 hover:text-white transition-all duration-200 transform hover:scale-105 border border-gray-600"
             >
               <ChatBubbleLeftRightIcon className="w-6 h-6" />
               <span>Explore Workspace</span>
             </button>
+          </div>
+
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-white mb-4">Workflows</h2>
+            <div className="flex flex-wrap gap-3 justify-center">
+              {workflows.map((workflow) => (
+                <button
+                  key={workflow.id}
+                  onClick={() => onStartWorkflow(workflow)}
+                  className="bg-gray-700/50 text-gray-300 font-medium py-2 px-6 rounded-lg hover:bg-gray-600/50 hover:text-white transition-all duration-200 border border-gray-600"
+                >
+                  {workflow.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-12 grid md:grid-cols-3 gap-6 text-left">

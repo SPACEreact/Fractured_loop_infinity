@@ -4,6 +4,20 @@ import { ChatRole } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import { SendIcon, SparklesIcon, UserIcon } from './IconComponents';
 
+const ImagePromptBlock = ({ prompt, imageData }: { prompt: string; imageData: string }) => {
+  return (
+    <div className="space-y-4">
+      <div className="bg-gray-900/50 p-4 rounded-lg">
+        <h4 className="text-indigo-300 font-semibold mb-2">Generated Image Prompt</h4>
+        <p className="text-gray-200 text-sm">{prompt}</p>
+      </div>
+      <div className="bg-gray-900/50 p-4 rounded-lg">
+        <img src={`data:image/png;base64,${imageData}`} alt="Generated image" className="max-w-full h-auto rounded-lg" />
+      </div>
+    </div>
+  );
+};
+
 interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
